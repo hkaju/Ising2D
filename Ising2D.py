@@ -6,45 +6,63 @@ import sys
 import math
 import util
 
-LATTICE_SIZE = 10
-EQUILIBRIATION_SWEEPS = 50
+LATTICE_SIZE = 20
+EQUILIBRIATION_CYCLES = 30
+MEASUREMENT_CYCLES = 10
+MAGNETIC_FIELD = 0.1
 
-def equilibriate(lattice, sweeps):
-    '''Minimise energy before calculating equilibrium properties.'''
+class Ising2D:
 
-    print("Minimising energy")
-    #Flip counter
-    n = 0
-    #Log file for tracking energy
-    log = [('x', 'y',)]
-    for sweep in range(sweeps):
-        for row in range(lattice.length):
-            for cell in range(lattice.length):
-                #Generate new lattice with a flipped spin
-                #print("Flipped %i %i" % (row, cell))
-                newlat = lattice.flip(row, cell)
-                #If the new lattice is lower in energy, accept the spin flip and continue
-                if newlat.getEnergyOf(row, cell) <= lattice.getEnergyOf(row, cell) or random.uniform(0, 1) < math.exp((-newlat.getEnergyOf(row, cell) + lattice.getEnergyOf(row, cell))):
-                    lattice = newlat
+    lattice = None
+    T = 0.5
+
+    def __init__(self):
+        self.lattice = Lattice2D(LATTICE_SIZE, B=MAGNETIC_FIELD)
+        util.write_lattice(self.lattice, "data/lattice0.csv")
+        self.equilibriate()
+
+    def equilibriate(self):
+        '''Equlilibriate the lattice before sampling.'''
+
+        print("Equilibriating")
+        #Step counter
+        n = 0
+        #Equilibriation log for tracking magnetization
+        log = [('x', 'y',)]
+        for sweep in range(EQUILIBRIATION_CYCLES):
+            for i in range(self.lattice.length**2):
+                #Perform MC step
+                self.MCStep()
                 n += 1
-                log.append((str(n), str(lattice.getMagnetization()),))
-        #Print new energy value
-        print(lattice.getEnergy())
-        util.write_lattice(lattice, "data/lattice%i.csv" % (sweep + 1))
-    #Write equilibriation log to disk
-    l = open('data/equilibriation.csv', 'w')
-    for line in log:
-        l.write("%s,%s\n" % line)
-    #Return new lattice
-    return lattice
+                #Log magnetization
+                log.append((str(n), str(self.lattice.getMagnetization()),))
+            #Take a snapshot of the lattice after each sweep
+            util.write_lattice(self.lattice, "data/lattice%i.csv" % (sweep + 1))
+        #Write equilibriation log to disk
+        logfile = open('data/equilibriation.csv', 'w')
+        for line in log:
+            logfile.write("%s,%s\n" % line)
 
+    def sample(self):
+        pass
+
+    def MCStep(self):
+        '''Perform a single Monte Carlo step.'''
+
+        #Select a spin at random
+        x = random.randrange(self.lattice.length)
+        y = random.randrange(self.lattice.length)
+        #Flip the spin
+        new_lattice = self.lattice.flip(x, y)
+        #Calculate the energy difference between the new and the old configuration
+        dE = new_lattice.getEnergyOf(x, y) - self.lattice.getEnergyOf(x, y)
+        #Calculate acceptance rate
+        acc = min(1, math.exp(-dE/self.T))
+        #Determine if the step was accepted
+        if random.uniform(0, 1) < acc:
+            self.lattice = new_lattice
 
 if __name__ == "__main__":
-    if '-r' in sys.argv:
-        util.generate_report()
-        sys.exit(0)
-    lat = Lattice2D(LATTICE_SIZE, B=0.1)
-    util.write_lattice(lat, "data/lattice0.csv")
-    lat = equilibriate(lat, EQUILIBRIATION_SWEEPS)
+    Ising2D()
     if '+r' in sys.argv:
         util.generate_report()
