@@ -1,7 +1,7 @@
 import glob
 import subprocess
 
-def generate_report():
+def generate_report(filename):
     '''Generate a PDF report containing magnetization data and lattice snapshots.'''
 
     n_lattices = len(glob.glob("data/lattice*.csv"))
@@ -15,7 +15,7 @@ def generate_report():
     for n in range(n_lattices):
         lattice_plots += latticeplot_template.format(n)
     #Write R file to disk
-    open('report.r', 'w').write(report_template % lattice_plots)
+    open('report.r', 'w').write(report_template.format(lattices=lattice_plots, filename=filename))
     #Run R and compile report
     subprocess.call(['R', '-f report.r'])
     print("Report generated!")
