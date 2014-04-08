@@ -92,12 +92,17 @@ class Lattice2D:
             energy = 0.0
             for x in range(self.length):
                 for y in range(self.length):
-                    #NN interactions
-                    #Negative coordinates used to get PBC for free thanks to Python's lists
-                    energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y + 1][-x] * self.J
-                    energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y - 1][-x] * self.J
-                    energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y][-x + 1] * self.J
-                    energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y][-x - 1] * self.J
+                    #Nearest-neighbour interactions
+                    #Negative coordinates used to get periodic boundary
+                    #conditions for free thanks to Python's lists
+                    energy += 0.5 * self.lattice[-y][-x]\
+                                  * self.lattice[-y + 1][-x] * self.J
+                    energy += 0.5 * self.lattice[-y][-x]\
+                                  * self.lattice[-y - 1][-x] * self.J
+                    energy += 0.5 * self.lattice[-y][-x]\
+                                  * self.lattice[-y][-x + 1] * self.J
+                    energy += 0.5 * self.lattice[-y][-x]\
+                                  * self.lattice[-y][-x - 1] * self.J
                     #Interactions with the magnetic field
                     energy += self.lattice[-y][-x] * self.B
             #Store energy for future use
@@ -111,10 +116,18 @@ class Lattice2D:
         energy = 0.0
 
         #NN interactions with PBC
-        energy += 0.5 * self.lattice[y][x] * self.lattice[min(y + 1, y + 1 - self.length)][x] * self.J
-        energy += 0.5 * self.lattice[y][x] * self.lattice[y - 1][x] * self.J
-        energy += 0.5 * self.lattice[y][x] * self.lattice[y][min(x + 1, x + 1 - self.length)] * self.J
-        energy += 0.5 * self.lattice[y][x] * self.lattice[y][x - 1] * self.J
+        energy += 0.5 * self.lattice[y][x]\
+                      * self.lattice[min(y + 1, y + 1 - self.length)][x]\
+                      * self.J
+        energy += 0.5 * self.lattice[y][x]\
+                      * self.lattice[y - 1][x]\
+                      * self.J
+        energy += 0.5 * self.lattice[y][x]\
+                      * self.lattice[y][min(x + 1, x + 1 - self.length)]\
+                      * self.J
+        energy += 0.5 * self.lattice[y][x]\
+                      * self.lattice[y][x - 1]\
+                      * self.J
         #Interactions with the magnetic field
         energy += self.lattice[y][x] * self.B
 
