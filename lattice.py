@@ -103,9 +103,9 @@ class Lattice2D:
         energy = 0.0
 
         #NN interactions with PBC
-        energy += 0.5 * self.lattice[y][x] * self.lattice[min(y + 1, y + 1 - self.length][x] * self.J
+        energy += 0.5 * self.lattice[y][x] * self.lattice[min(y + 1, y + 1 - self.length)][x] * self.J
         energy += 0.5 * self.lattice[y][x] * self.lattice[y - 1][x] * self.J
-        energy += 0.5 * self.lattice[y][x] * self.lattice[y][min(x + 1, x + 1 - self.length] * self.J
+        energy += 0.5 * self.lattice[y][x] * self.lattice[y][min(x + 1, x + 1 - self.length)] * self.J
         energy += 0.5 * self.lattice[y][x] * self.lattice[y][x - 1] * self.J
         #Interactions with the magnetic field
         energy += self.lattice[y][x] * self.B
