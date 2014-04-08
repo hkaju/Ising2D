@@ -3,16 +3,23 @@
 import random
 from lattice import *
 import glob
+import subprocess
+import sys
+import math
+
+LATTICE_SIZE = 40
+EQUILIBRIATION_SWEEPS = 30
 
 def generate_report():
     nlat = len(glob.glob("data/lattice*.csv"))
     rtemplate = open("templates/report.template.r", 'r').read()
     lattemplate = """data{0} <- read.csv('data/lattice{0}.csv', header=T)
-    levelplot(z~x*y, data{0}, main='Sweeps: {0}')\n"""
+    levelplot(z~x*y, data{0}, main='Sweeps: {0}', colorkey=FALSE, xlab='', ylab='')\n"""
     latprocessing = ""
     for i in range(nlat):
         latprocessing = latprocessing + lattemplate.format(i)
     open('report.r', 'w').write(rtemplate % latprocessing)
+    subprocess.call(['R', '-f report.r'])
     print("Report generated!")
 
 def write_lattice(lat, filename):
@@ -38,10 +45,10 @@ def equilibriate(lattice, sweeps):
                 #print("Flipped %i %i" % (row, cell))
                 newlat = lattice.flip(row, cell)
                 #If the new lattice is lower in energy, accept the spin flip and continue
-                if newlat.getEnergyOf(row, cell) <= lattice.getEnergyOf(row, cell):
+                if newlat.getEnergyOf(row, cell) <= lattice.getEnergyOf(row, cell) or random.uniform(0, 1) < math.exp((-newlat.getEnergyOf(row, cell) + lattice.getEnergyOf(row, cell))):
                     lattice = newlat
                 n += 1
-                log.append((str(n), str(lattice.getEnergy()),))
+                log.append((str(n), str(lattice.getMagnetization()),))
         #Print new energy value
         print(lattice.getEnergy())
         write_lattice(lattice, "data/lattice%i.csv" % (sweep + 1))
@@ -52,8 +59,13 @@ def equilibriate(lattice, sweeps):
     #Return new lattice
     return lattice
 
+
 if __name__ == "__main__":
-    lat = Lattice2D(30)
+    if '-r' in sys.argv:
+        generate_report()
+        sys.exit(0)
+    lat = Lattice2D(LATTICE_SIZE, B=0.1)
     write_lattice(lat, "data/lattice0.csv")
-    lat = equilibriate(lat, 20)
-    generate_report()
+    lat = equilibriate(lat, EQUILIBRIATION_SWEEPS)
+    if '+r' in sys.argv:
+        generate_report()
