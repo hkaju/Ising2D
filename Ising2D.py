@@ -38,7 +38,7 @@ def equilibriate(lattice, sweeps):
                 #print("Flipped %i %i" % (row, cell))
                 newlat = lattice.flip(row, cell)
                 #If the new lattice is lower in energy, accept the spin flip and continue
-                if newlat.getEnergy() <= lattice.getEnergy():
+                if newlat.getEnergyOf(row, cell) <= lattice.getEnergyOf(row, cell):
                     lattice = newlat
                 n += 1
                 log.append((str(n), str(lattice.getEnergy()),))
@@ -53,7 +53,7 @@ def equilibriate(lattice, sweeps):
     return lattice
 
 if __name__ == "__main__":
-    lat = Lattice2D(10, temp=0.00001)
+    lat = Lattice2D(30)
     write_lattice(lat, "data/lattice0.csv")
     lat = equilibriate(lat, 20)
     generate_report()
