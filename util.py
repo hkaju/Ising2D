@@ -13,7 +13,7 @@ def generate_report():
     #Generate R code for each lattice file
     lattice_plots = ""
     for n in range(n_lattices):
-        lattice_plots += lattemplate.format(i)
+        lattice_plots += latticeplot_template.format(n)
     #Write R file to disk
     open('report.r', 'w').write(report_template % lattice_plots)
     #Run R and compile report
