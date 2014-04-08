@@ -5,16 +5,19 @@ class Lattice2D:
 
     lattice = []
 
-    #Default model parameters
-    B = 0 #External magnetic field
-    J = -1 #Coupling between NN spins
+    #Model parameters
+
+    #External magnetic field
+    B = 0
+    #Coupling between NN spins
+    J = -1
 
     #Calculated lattice properties
     energy = None
     magnetization = None
 
     def __init__(self, length=None, lattice=None, temperature=None):
-        #If length is specified, initialise a new lattice with the required length
+        #If length is specified, initialize a new lattice with the required length
         if length:
             self.initialize(length)
         #If temperature is specified, set it here
@@ -54,7 +57,7 @@ class Lattice2D:
         return Lattice2D(lattice=newlattice)
 
     def randflip(self, x, y):
-        '''Randomise spin at (x, y).'''
+        '''Randomize spin at (x, y).'''
 
         #Copy lattice
         newlattice = deepcopy(self.lattice)
@@ -68,12 +71,12 @@ class Lattice2D:
 
         #If no magnetization is stored, recalculate
         if not self.magnetization:
-            sum = 0
+            magnetization = 0
             for row in self.lattice:
                 for cell in row:
-                    sum += cell
+                    magnetization += cell
             #Store magnetization for future use
-            self.magnetization = sum
+            self.magnetization = magnetization
 
         return self.magnetization
 
@@ -85,7 +88,8 @@ class Lattice2D:
             energy = 0.0
             for x in range(self.length):
                 for y in range(self.length):
-                    #NN interactions with PBC
+                    #NN interactions
+                    #Negative coordinates used to get PBC for free thanks to Python's lists
                     energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y + 1][-x] * self.J
                     energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y - 1][-x] * self.J
                     energy += 0.5 * self.lattice[-y][-x] * self.lattice[-y][-x + 1] * self.J
