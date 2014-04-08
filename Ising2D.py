@@ -1,34 +1,13 @@
 #!/usr/bin/env python
 
 import random
-from lattice import *
-import glob
-import subprocess
+from lattice import Lattice2D
 import sys
 import math
+import util
 
-LATTICE_SIZE = 40
-EQUILIBRIATION_SWEEPS = 30
-
-def generate_report():
-    nlat = len(glob.glob("data/lattice*.csv"))
-    rtemplate = open("templates/report.template.r", 'r').read()
-    lattemplate = """data{0} <- read.csv('data/lattice{0}.csv', header=T)
-    levelplot(z~x*y, data{0}, main='Sweeps: {0}', colorkey=FALSE, xlab='', ylab='')\n"""
-    latprocessing = ""
-    for i in range(nlat):
-        latprocessing = latprocessing + lattemplate.format(i)
-    open('report.r', 'w').write(rtemplate % latprocessing)
-    subprocess.call(['R', '-f report.r'])
-    print("Report generated!")
-
-def write_lattice(lat, filename):
-    f = open(filename, 'w')
-    f.write("x,y,z\n")
-    for x in range(lat.length):
-        for y in range(lat.length):
-            f.write("%i,%i,%i\n" % (x, y, lat.lattice[y][x]))
-    f.close()
+LATTICE_SIZE = 10
+EQUILIBRIATION_SWEEPS = 50
 
 def equilibriate(lattice, sweeps):
     '''Minimise energy before calculating equilibrium properties.'''
@@ -51,7 +30,7 @@ def equilibriate(lattice, sweeps):
                 log.append((str(n), str(lattice.getMagnetization()),))
         #Print new energy value
         print(lattice.getEnergy())
-        write_lattice(lattice, "data/lattice%i.csv" % (sweep + 1))
+        util.write_lattice(lattice, "data/lattice%i.csv" % (sweep + 1))
     #Write equilibriation log to disk
     l = open('data/equilibriation.csv', 'w')
     for line in log:
@@ -62,10 +41,10 @@ def equilibriate(lattice, sweeps):
 
 if __name__ == "__main__":
     if '-r' in sys.argv:
-        generate_report()
+        util.generate_report()
         sys.exit(0)
     lat = Lattice2D(LATTICE_SIZE, B=0.1)
-    write_lattice(lat, "data/lattice0.csv")
+    util.write_lattice(lat, "data/lattice0.csv")
     lat = equilibriate(lat, EQUILIBRIATION_SWEEPS)
     if '+r' in sys.argv:
-        generate_report()
+        util.generate_report()
