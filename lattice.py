@@ -1,5 +1,5 @@
 import random
-from copy import *
+from copy import deepcopy
 
 class Lattice2D:
 
@@ -33,7 +33,7 @@ class Lattice2D:
             self.B = B
 
     def initialize(self, length):
-        '''Create a square lattice and populate it with random spins.'''
+        """Create a square lattice and populate it with random spins."""
 
         self.length = length
         print("Initializing {len}x{len} square lattice".format(len=length))
@@ -44,14 +44,14 @@ class Lattice2D:
             self.lattice.append(row)
 
     def visualize(self):
-        '''Print out the lattice.'''
+        """Print out the lattice."""
 
         for row in self.lattice:
             #TODO Pretty formatting
             print(row)
 
     def flip(self, x, y):
-        '''Flip spin at (x, y).'''
+        """Flip spin at (x, y)."""
 
         #Copy lattice
         newlattice = deepcopy(self.lattice)
@@ -61,7 +61,7 @@ class Lattice2D:
         return Lattice2D(lattice=newlattice, B=self.B)
 
     def randflip(self, x, y):
-        '''Randomize spin at (x, y).'''
+        """Randomize spin at (x, y)."""
 
         #Copy lattice
         newlattice = deepcopy(self.lattice)
@@ -70,8 +70,8 @@ class Lattice2D:
         #Return a new Lattice2D object
         return Lattice2D(lattice=newlattice, B=self.B)
 
-    def getMagnetization(self):
-        '''Returns total magnetization of the current configuration.'''
+    def get_magnetization(self):
+        """Returns total magnetization of the current configuration."""
 
         #If no magnetization is stored, recalculate
         if not self.magnetization:
@@ -84,8 +84,8 @@ class Lattice2D:
 
         return self.magnetization
 
-    def getEnergy(self):
-        '''Returns the total energy of the current configuration.'''
+    def get_energy(self):
+        """Returns the total energy of the current configuration."""
 
         #If energy is not stored, recalculate
         if not self.energy:
@@ -105,8 +105,8 @@ class Lattice2D:
 
         return self.energy
 
-    def getEnergyOf(self, x, y):
-        '''Returns the energy of spin at (x, y).'''
+    def get_energy_at(self, x, y):
+        """Returns the energy of spin at (x, y)."""
 
         energy = 0.0
 
