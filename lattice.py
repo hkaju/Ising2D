@@ -8,25 +8,29 @@ class Lattice2D:
     #Model parameters
 
     #External magnetic field
+    #Default: no field
     B = 0
+
     #Coupling between NN spins
+    #-1 - ferromagnet, aligned spins lower in energy
+    #+1 - antiferromagnet, antialigned spins lower in energy
+    #Default: ferromagnet
     J = -1
 
     #Calculated lattice properties
     energy = None
     magnetization = None
 
-    def __init__(self, length=None, lattice=None, temperature=None):
+    def __init__(self, length=None, lattice=None, B=None):
         #If length is specified, initialize a new lattice with the required length
         if length:
             self.initialize(length)
-        #If temperature is specified, set it here
-        if temperature:
-            self.J = self.J * temp
         #If an existing lattice is provided, use that to initialize
         if lattice:
             self.lattice = lattice
             self.length = len(lattice)
+        if B:
+            self.B = B
 
     def initialize(self, length):
         '''Create a square lattice and populate it with random spins.'''
@@ -54,7 +58,7 @@ class Lattice2D:
         #Flip the spin
         newlattice[y][x] = -newlattice[y][x]
         #Return a new Lattice2D object
-        return Lattice2D(lattice=newlattice)
+        return Lattice2D(lattice=newlattice, B=self.B)
 
     def randflip(self, x, y):
         '''Randomize spin at (x, y).'''
@@ -64,19 +68,19 @@ class Lattice2D:
         #Generate new spin
         newlattice[y][x] = random.choice([-1, 1])
         #Return a new Lattice2D object
-        return Lattice2D(lattice=newlattice)
+        return Lattice2D(lattice=newlattice, B=self.B)
 
     def getMagnetization(self):
         '''Returns total magnetization of the current configuration.'''
 
         #If no magnetization is stored, recalculate
         if not self.magnetization:
-            magnetization = 0
+            magnetization = 0.0
             for row in self.lattice:
                 for cell in row:
                     magnetization += cell
             #Store magnetization for future use
-            self.magnetization = magnetization
+            self.magnetization = magnetization / self.length**2
 
         return self.magnetization
 
