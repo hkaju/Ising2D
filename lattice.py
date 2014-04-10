@@ -1,5 +1,6 @@
 import random
 import math
+import sys
 
 class Lattice2D:
 
@@ -46,7 +47,10 @@ class Lattice2D:
             for x in range(length):
                 row[x] = random.choice([-1, 1])
             self.lattice[y] = row
-        print("Initialized {0}x{0} lattice with T={1}, B={2}, J={3}".format(self.length, self.T, self.B, self.J))
+        print("Initialized {0}x{0} lattice with T={1}, B={2}, J={3}".format(
+            self.length, self.T, self.B, self.J))
+        print("M: {0}\nE: {1}".format(self.get_magnetization(),
+            self.get_energy()))
 
     def set_temperature(self, temperature):
         """Set the temperature of the lattice."""
@@ -63,12 +67,15 @@ class Lattice2D:
     def flip(self, x, y):
         """Flip spin at (x, y)."""
 
+        old = self.get_energy_at(x, y)
         #Flip the spin
         self.lattice[y][x] = -self.lattice[y][x]
-
-        #Reset properties so that they will be recalculated
-        self.energy = None
-        self.magnetization = None
+        new = self.get_energy_at(x, y)
+        #Update energy and magnetization values
+        if self.energy:
+            self.energy += new - old
+        if self.magnetization:
+            self.magnetization += 2 * self.lattice[y][x]
 
     def mc_move(self):
         """Perform a single Monte Carlo move."""
@@ -76,13 +83,15 @@ class Lattice2D:
         #Select a spin at random
         x = random.randrange(self.length)
         y = random.randrange(self.length)
+
         #Calculate energy of the old configuration
-        energy = self.get_energy_at(x, y)
+        old = self.get_energy()
         #Flip the spin
         self.flip(x, y)
         #Calculate the energy difference between the new
         #and the old configuration
-        dE = self.get_energy_at(x, y) - energy
+        new = self.get_energy()
+        dE = new - old
         #Calculate acceptance rate
         if self.T > 0:
             acc = min(1, math.exp(-dE/self.T))
@@ -96,16 +105,16 @@ class Lattice2D:
             self.flip(x, y)
 
     def get_magnetization(self):
-        """Returns magnetization per site of the current configuration."""
+        """Returns total magnetization of the current configuration."""
 
         #If no magnetization is stored, recalculate
-        if not self.magnetization:
-            magnetization = 0.0
+        if self.magnetization == None:
+            magnetization = 0
             for row in self.lattice:
                 for cell in row:
                     magnetization += cell
             #Store magnetization for future use
-            self.magnetization = magnetization / self.length**2
+            self.magnetization = magnetization
 
         return self.magnetization
 
@@ -113,7 +122,7 @@ class Lattice2D:
         """Returns the total energy of the current configuration."""
 
         #If energy is not stored, recalculate
-        if not self.energy:
+        if self.energy == None:
             energy = 0.0
             for x in range(self.length):
                 for y in range(self.length):
