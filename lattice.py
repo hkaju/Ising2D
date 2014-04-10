@@ -67,8 +67,8 @@ class Lattice2D:
         self.lattice[y][x] = -self.lattice[y][x]
 
         #Reset properties so that they will be recalculated
-        #self.energy = None
-        #self.magnetization = None
+        self.energy = None
+        self.magnetization = None
 
     def mc_move(self):
         """Perform a single Monte Carlo move."""
