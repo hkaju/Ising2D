@@ -1,31 +1,28 @@
+#
+#Do not look at this file!
+#FIXME: clean up utility functions
+#
+
 import glob
 import subprocess
 import os
 
-def deepcopy(lattice):
-    l = len(lattice)
-    newlattice = [[None] * l] * l
-    for x in range(l):
-        for y in range(l):
-            newlattice[y][x] = 1 * lattice[y][x]
-    return newlattice
-
-def generate_report(filename):
+def generate_report(run):
     report_template = open("templates/report.template.r", 'r').read()
-    equilibriation_template = """{run} <- read.csv("{filename}", header=T)
-plot({run}$x, {run}$y, xlab="MC moves", ylab="Magnetization", type="n", main="{run}", ylim=c(-1, 1))
-lines({run}$x, {run}$y)\n"""
+    equilibriation_template = """{temp} <- read.csv("{filename}", header=T)
+plot({temp}$x, {temp}$y, xlab="MC moves", ylab="Magnetization", type="n", main="{temp}")
+lines({temp}$x, {temp}$y)\n"""
     equilibriation_graphs = ""
-    for datafile in glob.glob("data/equilibriation*.csv"):
-        run = datafile[20:-4]
-        equilibriation_graphs += equilibriation_template.format(filename=datafile, run=run)
+    for datafile in glob.glob("data/" + run + "/equilibriation*.csv"):
+        temp = datafile.split("-")[-1][:-4]
+        equilibriation_graphs += equilibriation_template.format(filename=datafile, temp=temp)
     #Write R file to disk
-    open('report.r', 'w').write(report_template.format(equilibriation_graphs=equilibriation_graphs, filename=filename))
+    open('report.r', 'w').write(report_template.format(equilibriation_graphs=equilibriation_graphs, run=run))
     #Run R and compile report
     subprocess.call(['R', '-f report.r'])
     print("Report generated!")
 
-def generate_equilibriation_report(filename):
+def generate_equilibriation_report(run):
     '''Generate a PDF report containing magnetization data and lattice snapshots.'''
 
     n_lattices = len(glob.glob("data/lattice*.csv"))
