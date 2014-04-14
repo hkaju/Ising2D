@@ -9,11 +9,11 @@ from lattice import Lattice2D
 #Measurement properties
 EQUILIBRIATION_SWEEPS = 100
 MEASUREMENT_SWEEPS = 50
-SAMPLING_FREQUENCY = 100
+SAMPLING_FREQUENCY = 10
 
 #Temperature dependence measurements
-STARTING_TEMPERATURE = 0.01
-FINAL_TEMPERATURE = 3
+STARTING_TEMPERATURE = 1
+FINAL_TEMPERATURE = 5
 TEMPERATURE_STEP = 0.1
 
 class Ising2D:
@@ -34,7 +34,7 @@ class Ising2D:
                                  B=magnetic_field)
 
         #Equilibriate lattice before taking averages
-        self.equilibriate(EQUILIBRIATION_SWEEPS)
+        self.equilibriate(EQUILIBRIATION_SWEEPS * 5)
 
         #Start measuring averages at increasing temperatures
         results = {}
