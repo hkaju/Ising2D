@@ -20,7 +20,7 @@ class Lattice2D:
     #- - ferromagnet, aligned spins lower in energy
     #+ - antiferromagnet, antialigned spins lower in energy
     #Default: ferromagnet, multiplied by 0.5 to avoid double counting
-    J = -1 * 0.5
+    J = -1
 
     #Calculated lattice properties
     energy = None
@@ -45,7 +45,10 @@ class Lattice2D:
         for y in range(length):
             row = [None] * length
             for x in range(length):
-                row[x] = random.choice([-1, 1])
+                #Set all spins to be random to start out at T = infinity
+                #row[x] = random.choice([-1, 1])
+                #Set all spins to be pointing in one direction to start at T = 0
+                row[x] = 1
             self.lattice[y] = row
         print("Initialized {0}x{0} lattice with T={1}, B={2}, J={3}".format(
             self.length, self.T, self.B, self.J))
@@ -72,9 +75,9 @@ class Lattice2D:
         self.lattice[y][x] = -self.lattice[y][x]
         new = self.get_energy_at(x, y)
         #Update energy and magnetization values
-        if self.energy:
+        if self.energy != None:
             self.energy += new - old
-        if self.magnetization:
+        if self.magnetization != None:
             self.magnetization += 2 * self.lattice[y][x]
 
     def mc_move(self):
