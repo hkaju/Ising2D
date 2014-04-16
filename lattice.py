@@ -1,6 +1,5 @@
 import random
 import math
-import sys
 
 class Lattice2D:
 
