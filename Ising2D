@@ -9,7 +9,7 @@ from lattice import Lattice2D
 #Measurement properties
 EQUILIBRIATION_SWEEPS = 500
 MEASUREMENT_SWEEPS = 500
-SAMPLING_FREQUENCY = 100
+SAMPLING_FREQUENCY = 1
 
 #Temperature dependence measurements
 STARTING_TEMPERATURE = 1.0
@@ -44,14 +44,14 @@ class Ising2D:
                 lattice_size,
                 magnetic_field,
                 i+1)
-            print self._run_id
+
             #Initialize new lattice
             self._lattice = Lattice2D(lattice_size,
                 T=STARTING_TEMPERATURE,
                 B=magnetic_field,
                 prerun=True)
 
-            self.equilibriate(2000)
+            self.equilibriate(2000, prerun=True)
 
     def calculate_temperature_dependence(self, lattice_size, magnetic_field):
         """Calculate temperature dependence of the magnetization, energy,
@@ -91,7 +91,28 @@ class Ising2D:
         #Write results to disk
         util.write_results(results, self._run_id)
 
-    def equilibriate(self, cycles):
+        #Find critical temperature from response functions
+        Xtmax = 0
+        Xbmax = 0
+        Tc = {"M" : 0, "E" : 0}
+        for temperature in results:
+            Xt = (results[temperature]["E2"] - results[temperature]["E"]**2) / float(temperature)**2
+            Xb = (results[temperature]["M2"] - results[temperature]["M"]**2) / float(temperature)
+            if Xt > Xtmax:
+                Tc["E"] = temperature
+                Xtmax = Xt
+            if Xb > Xbmax:
+                Tc["M"] = temperature
+                Xbmax = Xb
+
+        util.store_critical_temperature(Tc, self._run_id)
+
+        print("""Critical temperature for {0}
+            Based on energy fluctuations: {1}
+            Based on fluctuations in magnetization: {2}
+            Average: {3}""".format(self._run_id, Tc["E"], Tc["M"], (Tc["E"] + Tc["M"]) / 2.0))
+
+    def equilibriate(self, cycles, prerun=False):
         """Equlilibriate the lattice before sampling."""
 
         #Step counter
@@ -109,12 +130,12 @@ class Ising2D:
                 if i % (1 + self._lattice.length**2 / 100) == 0:
                     b += 1
                     #Log magnetization to track equilibriation progress
+                    if prerun:
+                        magnetization = str(abs(self._lattice.get_magnetization()))
+                    else:
+                        magnetization = str(self._lattice.get_magnetization())
                     log.append((str(n/float(self._lattice.length**2)),
-                        str(self._lattice.get_magnetization()),))
-
-        #Take a snapshot of the lattice after equilibriation
-        #util.write_lattice(self._lattice,
-        #    "data/{0}/lattice-T{1}.csv".format(self._run_id, self._lattice.T))
+                        magnetization,))
 
         #Write equilibriation log to disk
         util.write_log(log,
