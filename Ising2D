@@ -8,7 +8,7 @@ from lattice import Lattice2D
 
 #Measurement properties
 EQUILIBRIATION_SWEEPS = 500
-MEASUREMENT_SWEEPS = 500
+MEASUREMENT_SWEEPS = 250
 SAMPLING_FREQUENCY = 1
 
 #Temperature dependence measurements
@@ -71,10 +71,10 @@ class Ising2D:
 
         print("Calculating temperature dependence...")
         while self._lattice.T < FINAL_TEMPERATURE:
-            print("T: {0}".format(self._lattice.T))
+            print("\nT: {0}".format(self._lattice.T))
 
             #Equilibriate lattice after each temperature increase
-            self.equilibriate(EQUILIBRIATION_SWEEPS)
+            self.equilibriate(lattice_size * 10)
 
             #Sample equilibrium properties
             data = self.sample()
@@ -107,7 +107,7 @@ class Ising2D:
 
         util.store_critical_temperature(Tc, self._run_id)
 
-        print("""Critical temperature for {0}
+        print("""\nCritical temperature for {0}
             Based on energy fluctuations: {1}
             Based on fluctuations in magnetization: {2}
             Average: {3}""".format(self._run_id, Tc["E"], Tc["M"], (Tc["E"] + Tc["M"]) / 2.0))
@@ -124,6 +124,9 @@ class Ising2D:
         b = 0
         for sweep in range(cycles):
             for i in range(self._lattice.length**2):
+                sys.stdout.write("\rEquilibriating: {0:3.1f}%".format(
+                    float(n)*100/(cycles*self._lattice.length**2)))
+                sys.stdout.flush()
                 #Perform MC step
                 self._lattice.mc_move()
                 n += 1
