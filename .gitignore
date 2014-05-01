@@ -4,3 +4,4 @@ report.pdf
 report.r
 util.pyc
 reports/*
+__pycache__
