@@ -10,4 +10,6 @@ plot(data$T, data$Xt, xlab="Temperature", ylab="Heat capacity")
 
 par(mfrow=c(3,2))
 
+{equilibriation_graphs}
+
 dev.off()
