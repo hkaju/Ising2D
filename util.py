@@ -17,9 +17,21 @@ lines({temp}$x, {temp}$y)\n"""
         temp = datafile.split("-")[-1][:-4]
         equilibriation_graphs += equilibriation_template.format(filename=datafile, temp=temp)
     #Write R file to disk
-    open('report.r', 'w').write(report_template.format(equilibriation_graphs=equilibriation_graphs, run=run))
+    if not os.path.exists("tmp"):
+        os.mkdir("tmp")
+    open('tmp/report.r', 'w').write(report_template.format(equilibriation_graphs=equilibriation_graphs, run=run))
     #Run R and compile report
-    subprocess.call(['R', '-f report.r'])
+    subprocess.call(['R', '-f tmp/report.r'])
+    print("Report generated!")
+
+def generate_prerun_report(run):
+    report_template = open("templates/prerun.template.r", 'r').read()
+    #Write R file to disk
+    if not os.path.exists("tmp"):
+        os.mkdir("tmp")
+    open('tmp/prerun.report.r', 'w').write(report_template.format(run=run))
+    #Run R and compile report
+    subprocess.call(['R', '-f tmp/prerun.report.r'])
     print("Report generated!")
 
 def generate_equilibriation_report(run):
@@ -53,6 +65,8 @@ def write_lattice(lattice, filename):
 
 def write_results(data, folder):
     path = "data" + os.sep + folder
+    if not os.path.exists("data"):
+        os.mkdir("data")
     if not os.path.exists(path):
         os.mkdir(path)
     results_file = open(path + os.sep + "results.csv", "w")
@@ -68,8 +82,22 @@ def write_results(data, folder):
         results_file.write(line)
     results_file.close()
 
+def write_raw_data(data, folder, temperature):
+    path = "data" + os.sep + folder
+    if not os.path.exists("data"):
+        os.mkdir("data")
+    if not os.path.exists(path):
+        os.mkdir(path)
+    results_file = open("{0}{1}sampled_data-T{2}.csv".format(path, os.sep, temperature), "w")
+    results_file.write("M,E\n")
+    for i in range(len(data["M"])):
+        results_file.write("{0},{1}\n".format(data["M"][i], data["E"][i]))
+    results_file.close()
+
 def write_log(log, folder, filename):
     path = "data" + os.sep + folder
+    if not os.path.exists("data"):
+        os.mkdir("data")
     if not os.path.exists(path):
         os.mkdir(path)
     logfile = open(path + os.sep + filename, "w")

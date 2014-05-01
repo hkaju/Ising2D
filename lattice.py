@@ -25,7 +25,7 @@ class Lattice2D:
     energy = None
     magnetization = None
 
-    def __init__(self, length, B=None, T=None, J=None):
+    def __init__(self, length, B=None, T=None, J=None, prerun=False):
         if B:
             self.B = B
         if J:
@@ -33,9 +33,12 @@ class Lattice2D:
         if T:
             self.T = T
         if length:
-            self.initialize(length)
+            if prerun:
+                self.initialize(length, random_spins=True)
+            else:
+                self.initialize(length)
 
-    def initialize(self, length):
+    def initialize(self, length, random_spins=False):
         """Create a square lattice and populate it with random spins."""
 
         self.length = length
@@ -44,10 +47,12 @@ class Lattice2D:
         for y in range(length):
             row = [None] * length
             for x in range(length):
-                #Set all spins to be random to start out at T = infinity
-                #row[x] = random.choice([-1, 1])
-                #Set all spins to be pointing in one direction to start at T = 0
-                row[x] = 1
+                if random_spins:
+                    #Set all spins to be random to start out at T = infinity
+                    row[x] = random.choice([-1, 1])
+                else:
+                    #Set all spins to be pointing in one direction to start at T = 0
+                    row[x] = 1
             self.lattice[y] = row
         print("Initialized {0}x{0} lattice with T={1}, B={2}, J={3}".format(
             self.length, self.T, self.B, self.J))
@@ -119,6 +124,9 @@ class Lattice2D:
             self.magnetization = magnetization
 
         return self.magnetization
+
+    def get_average_magnetization(self):
+        return self.get_magnetization() / float(self.length**2)
 
     def get_energy(self):
         """Returns the total energy of the current configuration."""

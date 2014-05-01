@@ -7,12 +7,12 @@ import util
 from lattice import Lattice2D
 
 #Measurement properties
-EQUILIBRIATION_SWEEPS = 100
-MEASUREMENT_SWEEPS = 50
-SAMPLING_FREQUENCY = 10
+EQUILIBRIATION_SWEEPS = 500
+MEASUREMENT_SWEEPS = 500
+SAMPLING_FREQUENCY = 100
 
 #Temperature dependence measurements
-STARTING_TEMPERATURE = 1
+STARTING_TEMPERATURE = 1.0
 FINAL_TEMPERATURE = 5
 TEMPERATURE_STEP = 0.1
 
@@ -20,9 +20,42 @@ class Ising2D:
 
     _lattice = None
 
-    def __init__(self, lattice_size, magnetic_field):
+    def __init__(self, lattice_size, magnetic_field, preruns=False):
         """Set up the model and calculate temperature dependencies of
         equilibrium properties."""
+
+        if preruns:
+            self.prerun(lattice_size, magnetic_field, preruns)
+        else:
+            self.calculate_temperature_dependence(lattice_size, magnetic_field)
+
+    def prerun(self, lattice_size, magnetic_field, preruns):
+        """Generate equilibriation data to determine equilibriation time
+        for set lattice size."""
+
+        for i in range(preruns):
+            print("Running equilibriation {2} for run {0}x{0}-B{1}".format(
+                lattice_size,
+                magnetic_field,
+                i+1))
+            #Runs are are identified by lattice size and magnetic field
+            #E.g. 10x10-B0.5
+            self._run_id = "{0}x{0}-B{1}-prerun{2}".format(
+                lattice_size,
+                magnetic_field,
+                i+1)
+            print self._run_id
+            #Initialize new lattice
+            self._lattice = Lattice2D(lattice_size,
+                T=STARTING_TEMPERATURE,
+                B=magnetic_field,
+                prerun=True)
+
+            self.equilibriate(2000)
+
+    def calculate_temperature_dependence(self, lattice_size, magnetic_field):
+        """Calculate temperature dependence of the magnetization, energy,
+        heat capacity and magnetic susceptibility."""
 
         #Runs are are identified by lattice size and magnetic field
         #E.g. 10x10-B0.5
@@ -33,11 +66,10 @@ class Ising2D:
                                  T=STARTING_TEMPERATURE,
                                  B=magnetic_field)
 
-        #Equilibriate lattice before taking averages
-        self.equilibriate(EQUILIBRIATION_SWEEPS * 5)
-
         #Start measuring averages at increasing temperatures
         results = {}
+
+        print("Calculating temperature dependence...")
         while self._lattice.T < FINAL_TEMPERATURE:
             print("T: {0}".format(self._lattice.T))
 
@@ -46,6 +78,9 @@ class Ising2D:
 
             #Sample equilibrium properties
             data = self.sample()
+
+            #Store raw data for post-processing
+            util.write_raw_data(data, self._run_id, self._lattice.T)
 
             #Calculate averages and response functions
             results[self._lattice.T] = self.calculate_properties(data)
@@ -65,13 +100,17 @@ class Ising2D:
         #Equilibriation log
         log = [("x", "y",)]
 
+        b = 0
         for sweep in range(cycles):
             for i in range(self._lattice.length**2):
                 #Perform MC step
                 self._lattice.mc_move()
                 n += 1
-                #Log magnetization to track equilibriation progress
-                log.append((str(n), str(self._lattice.get_magnetization()),))
+                if i % (1 + self._lattice.length**2 / 100) == 0:
+                    b += 1
+                    #Log magnetization to track equilibriation progress
+                    log.append((str(n/float(self._lattice.length**2)),
+                        str(self._lattice.get_magnetization()),))
 
         #Take a snapshot of the lattice after equilibriation
         #util.write_lattice(self._lattice,
@@ -120,14 +159,25 @@ class Ising2D:
         return data
 
 if __name__ == "__main__":
+    preruns = False
     for arg in sys.argv:
-        match = re.search('(\d+)x(\d+)-B(.+)', arg)
-        if match:
-            lattice_size = int(match.group(1))
-            magnetic_field = float(match.group(3))
+        normal_match = re.search('(\d+)x(\d+)-B([-+]?[0-9]*\.?[0-9]+)', arg)
+        if normal_match:
+            lattice_size = int(normal_match.group(1))
+            magnetic_field = float(normal_match.group(3))
+        prerun_match = re.search('-pre(\d)', arg)
+        if prerun_match:
+            preruns = int(prerun_match.group(1))
     if not "+r" in sys.argv:
-        Ising2D(lattice_size, magnetic_field)
+        if preruns:
+            Ising2D(lattice_size, magnetic_field, preruns)
+        else:
+            Ising2D(lattice_size, magnetic_field, preruns)
     if not "-r" in sys.argv:
         #Generate a PDF report of the results
-        util.generate_report("{0}x{0}-B{1}".format(lattice_size,
+        if preruns:
+            util.generate_prerun_report("{0}x{0}-B{1}".format(lattice_size,
+            magnetic_field))
+        else:
+            util.generate_report("{0}x{0}-B{1}".format(lattice_size,
             magnetic_field))
