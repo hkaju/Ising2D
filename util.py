@@ -8,6 +8,8 @@ import subprocess
 import os
 
 def generate_report(run):
+    if not os.path.exists("reports"):
+        os.mkdir("reports")
     report_template = open("templates/report.template.r", 'r').read()
     equilibriation_template = """{temp} <- read.csv("{filename}", header=T)
 plot({temp}$x, {temp}$y, xlab="MC moves", ylab="Magnetization", type="n", main="{temp}")
@@ -25,6 +27,8 @@ lines({temp}$x, {temp}$y)\n"""
     print("Report generated!")
 
 def generate_prerun_report(run):
+    if not os.path.exists("reports"):
+        os.mkdir("reports")
     report_template = open("templates/prerun.template.r", 'r').read()
     #Write R file to disk
     if not os.path.exists("tmp"):
@@ -37,6 +41,8 @@ def generate_prerun_report(run):
 def generate_equilibriation_report(run):
     '''Generate a PDF report containing magnetization data and lattice snapshots.'''
 
+    if not os.path.exists("reports"):
+        os.mkdir("reports")
     n_lattices = len(glob.glob("data/lattice*.csv"))
     #R code template
     report_template = open("templates/report.template.r", 'r').read()
