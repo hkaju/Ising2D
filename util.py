@@ -82,6 +82,22 @@ def write_results(data, folder):
         results_file.write(line)
     results_file.close()
 
+def store_critical_temperature(data, folder):
+    path = "data" + os.sep + folder
+    if not os.path.exists("data"):
+        os.mkdir("data")
+    if not os.path.exists(path):
+        os.mkdir(path)
+    results_file = open(path + os.sep + "critical_temp.txt", "w")
+    results_file.write("""Critical temperature for {0}
+            Based on energy fluctuations: {1}
+            Based on fluctuations in magnetization: {2}
+            Average: {3}""".format(folder,
+                data["E"],
+                data["M"],
+                (data["E"] + data["M"]) / 2.0))
+    results_file.close()
+
 def write_raw_data(data, folder, temperature):
     path = "data" + os.sep + folder
     if not os.path.exists("data"):
