@@ -12,7 +12,7 @@ def generate_report(run):
         os.mkdir("reports")
     report_template = open("templates/report.template.r", 'r').read()
     equilibriation_template = """{temp} <- read.csv("{filename}", header=T)
-plot({temp}$x, {temp}$y, xlab="MC moves", ylab="Magnetization", type="n", main="{temp}")
+plot({temp}$x, {temp}$y, xlab="MC sweeps", ylab="Magnetization", type="n", main="{temp}")
 lines({temp}$x, {temp}$y)\n"""
     equilibriation_graphs = ""
     for datafile in glob.glob("data/" + run + "/equilibriation*.csv"):
