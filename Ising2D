@@ -176,8 +176,8 @@ class Ising2D:
         for n in range(MEASUREMENT_SWEEPS * self._lattice.length**2):
             self._lattice.mc_move()
             if n % SAMPLING_FREQUENCY == 0:
-                magnetization = self._lattice.get_magnetization()
-                energy = self._lattice.get_energy()
+                magnetization = self._lattice.get_average_magnetization()
+                energy = self._lattice.get_average_energy()
                 data["M"].append(magnetization)
                 data["E"].append(energy)
         return data

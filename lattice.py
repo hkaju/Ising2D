@@ -154,6 +154,9 @@ class Lattice2D:
 
         return self.energy
 
+    def get_average_energy(self):
+        return self.get_energy() / float(self.length**2)
+
     def get_energy_at(self, x, y):
         """Returns the energy of spin at (x, y)."""
 
